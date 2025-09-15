@@ -38,10 +38,10 @@ void drawGrid() {
     }
 }
 
-void drawStone(SDL_Point p) {
-    if (player == 1)
+void drawStone(SDL_Point p, int color) {
+    if (color == 1)
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-    else if (player == -1)
+    else if (color == -1)
         SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
 
     for (int x = p.x - stoneRadius; x <= p.x + stoneRadius; x++)
@@ -54,7 +54,14 @@ void drawStone(SDL_Point p) {
 }
 
 void drawStones() {
+    for (int i = 0; i < gridSize; ++i) {
+        for (int j = 0; j < gridSize; ++j) {
+            if (grid[i][j] == 0)
+                continue;
 
+            drawStone(gridCoords[i][j], grid[i][j]);
+        }
+    }
 }
 
 int main() {
@@ -73,10 +80,7 @@ int main() {
 
         drawBackground();
         drawGrid();
-        player = 1;
-        drawStone(gridCoords[0][0]);
-        player = -1;
-        drawStone(gridCoords[1][0]);
+        drawStones();
         SDL_RenderPresent(ren);
     }
 

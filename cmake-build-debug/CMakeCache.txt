@@ -207,6 +207,9 @@ PKG_CONFIG_ARGN:STRING=
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
 
+//The directory containing a CMake configuration file for SDL2.
+SDL2_DIR:PATH=/usr/lib/cmake/SDL2
+
 //Path to a library.
 pkgcfg_lib_SDL2_SDL2:FILEPATH=/usr/lib/libSDL2.so
 
