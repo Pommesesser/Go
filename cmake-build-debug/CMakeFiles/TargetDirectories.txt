@@ -1,0 +1,3 @@
+/home/david/Projects/Go/cmake-build-debug/CMakeFiles/Go.dir
+/home/david/Projects/Go/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/david/Projects/Go/cmake-build-debug/CMakeFiles/rebuild_cache.dir
