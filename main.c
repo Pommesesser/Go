@@ -12,12 +12,37 @@ int grid[gridSize][gridSize] = {0};
 SDL_Point gridCoords[gridSize][gridSize];
 SDL_Window *win;
 SDL_Renderer *ren;
+SDL_Texture *stoneTextures[2];
 
 void preComputeGridCoordinates() {
     for (int x = 0; x < gridSize; ++x) {
         for (int y = 0; y < gridSize; ++y)
             gridCoords[x][y] = (SDL_Point) {border + x * offset, border + y * offset};
     }
+}
+
+void preComputeStoneTextures() {
+    // Black stone
+    stoneTextures[0] = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, stoneRadius*2, stoneRadius*2);
+    SDL_SetTextureBlendMode(stoneTextures[0], SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(ren, stoneTextures[0]);
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    for (int x = -stoneRadius; x <= stoneRadius; x++)
+        for (int y = -stoneRadius; y <= stoneRadius; y++)
+            if (x*x + y*y <= stoneRadius*stoneRadius)
+                SDL_RenderDrawPoint(ren, x + stoneRadius, y + stoneRadius);
+
+    // White stone
+    stoneTextures[1] = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, stoneRadius*2, stoneRadius*2);
+    SDL_SetTextureBlendMode(stoneTextures[1], SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(ren, stoneTextures[1]);
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
+    for (int x = -stoneRadius; x <= stoneRadius; x++)
+        for (int y = -stoneRadius; y <= stoneRadius; y++)
+            if (x*x + y*y <= stoneRadius*stoneRadius)
+                SDL_RenderDrawPoint(ren, x + stoneRadius, y + stoneRadius);
+
+    SDL_SetRenderTarget(ren, nullptr);
 }
 
 void drawBackground() {
@@ -34,28 +59,20 @@ void drawGrid() {
     }
 }
 
-void drawStone(const SDL_Point p, const int color) {
-    if (color == 1)
-        SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-    else if (color == -1)
-        SDL_SetRenderDrawColor(ren, 255, 255, 255, 255);
-
-    for (int x = p.x - stoneRadius; x <= p.x + stoneRadius; x++)
-        for (int y = p.y - stoneRadius; y <= p.y + stoneRadius; y++) {
-            const int dx = x - p.x;
-            const int dy = y - p.y;
-            if (dx * dx + dy * dy <= stoneRadius*stoneRadius)
-                SDL_RenderDrawPoint(ren, x, y);
-        }
-}
-
 void drawStones() {
     for (int i = 0; i < gridSize; ++i) {
         for (int j = 0; j < gridSize; ++j) {
             if (grid[i][j] == 0)
                 continue;
 
-            drawStone(gridCoords[i][j], grid[i][j]);
+            SDL_Rect dst = {
+                gridCoords[i][j].x - stoneRadius,
+                gridCoords[i][j].y - stoneRadius,
+                stoneRadius * 2,
+                stoneRadius * 2
+            };
+
+            SDL_RenderCopy(ren, stoneTextures[grid[i][j] - 1], nullptr, &dst);
         }
     }
 }
@@ -69,6 +86,9 @@ int main() {
     win = SDL_CreateWindow("Go",SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, dim, dim, SDL_WINDOW_RESIZABLE);
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     preComputeGridCoordinates();
+    preComputeStoneTextures();
+
+    grid[4][4] = 1;
 
     SDL_Event event;
     bool quit = false;
@@ -78,7 +98,7 @@ int main() {
                 quit = 1;
             if (event.type == SDL_MOUSEBUTTONDOWN) {
                 if (event.button.button == SDL_BUTTON_LEFT)
-                    handleClick();
+                    printf("x:%d y:%d\n", event.button.x, event.button.y);
             }
         }
 
