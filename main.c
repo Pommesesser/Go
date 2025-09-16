@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <SDL.h>
 
+constexpr int width = 900;
+constexpr int height = 900;
 constexpr int border = 50;
 constexpr int gridSize = 9;
 int grid[gridSize][gridSize] = {0};
-
-//Init values for SDL_Window
-int width = 900;
-int height = 900;
 
 int offset;
 int stoneRad;
@@ -91,11 +89,16 @@ void drawStones() {
 }
 
 void handleClick(const SDL_Point c, const int player) {
-    const int i = (c.x - border + offset / 2) / offset;
-    const int j = (c.y - border + offset / 2) / offset;
-    grid[i][j] = grid[i][j] == 0
-        ? player
-        : 0;
+    const int localX = c.x - gridDest.x;
+    const int localY = c.y - gridDest.y;
+
+    const int i = (localX + offset / 2) / offset;
+    const int j = (localY + offset / 2) / offset;
+
+    if (i < 0 || i >= gridSize || j < 0 || j >= gridSize)
+        return;
+
+    grid[i][j] = (grid[i][j] == 0) ? player : 0;
 }
 
 void computeLayout(const int w, const int h) {
@@ -113,12 +116,12 @@ void computeLayout(const int w, const int h) {
 
     for (int i = 0; i < gridSize; ++i)
         for (int j = 0; j < gridSize; ++j)
-            stoneDestArr[i][j] = (SDL_Rect) {gridDest.x + i * offset - stoneRad, gridDest.y + j * offset - stoneRad};
+            stoneDestArr[i][j] = (SDL_Rect) {gridDest.x + i * offset - stoneRad, gridDest.y + j * offset - stoneRad, stoneRad * 2, stoneRad * 2};
 }
 
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
-    win = SDL_CreateWindow("Go", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE);
+    win = SDL_CreateWindow("Go", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_BORDERLESS);
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     computeLayout(width, height);
@@ -133,13 +136,15 @@ int main() {
             if (event.type == SDL_QUIT)
                 quit = 1;
             if (event.type == SDL_MOUSEBUTTONDOWN) {
-                if (event.button.button == SDL_BUTTON_LEFT)
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    printf("LMB: %d %d\n", event.button.x, event.button.y);
                     handleClick((SDL_Point){event.button.x, event.button.y}, 1);
-                if (event.button.button == SDL_BUTTON_RIGHT)
+                }
+                if (event.button.button == SDL_BUTTON_RIGHT) {
+                    printf("RMB: %d %d\n", event.button.x, event.button.y);
                     handleClick((SDL_Point){event.button.x, event.button.y}, 2);
+                }
             }
-            if (event.type == SDL_WINDOWEVENT_RESIZED)
-                computeLayout(event.window.data1, event.window.data2);
         }
 
         drawBackground();
