@@ -13,6 +13,7 @@ SDL_Point gridCoords[gridSize][gridSize];
 SDL_Window *win;
 SDL_Renderer *ren;
 SDL_Texture *stoneTextures[2];
+SDL_Rect stoneTextureDestinations[gridSize][gridSize];
 
 void preComputeGridCoordinates() {
     for (int x = 0; x < gridSize; ++x) {
@@ -45,6 +46,17 @@ void preComputeStoneTextures() {
     SDL_SetRenderTarget(ren, nullptr);
 }
 
+void preComputeStoneTextureDestinations() {
+    for (int i = 0; i < gridSize; ++i)
+        for (int j = 0; j < gridSize; ++j)
+            stoneTextureDestinations[i][j] = (SDL_Rect) {
+                gridCoords[i][j].x - stoneRadius,
+                gridCoords[i][j].y - stoneRadius,
+                stoneRadius * 2,
+                stoneRadius * 2
+            };
+}
+
 void drawBackground() {
     SDL_SetRenderDrawColor(ren, 194, 136, 78, 255);
     SDL_RenderClear(ren);
@@ -64,15 +76,7 @@ void drawStones() {
         for (int j = 0; j < gridSize; ++j) {
             if (grid[i][j] == 0)
                 continue;
-
-            SDL_Rect dst = {
-                gridCoords[i][j].x - stoneRadius,
-                gridCoords[i][j].y - stoneRadius,
-                stoneRadius * 2,
-                stoneRadius * 2
-            };
-
-            SDL_RenderCopy(ren, stoneTextures[grid[i][j] - 1], nullptr, &dst);
+            SDL_RenderCopy(ren, stoneTextures[grid[i][j] - 1], nullptr, &stoneTextureDestinations[i][j]);
         }
     }
 }
@@ -87,6 +91,7 @@ int main() {
     ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     preComputeGridCoordinates();
     preComputeStoneTextures();
+    preComputeStoneTextureDestinations();
 
     grid[4][4] = 1;
 
